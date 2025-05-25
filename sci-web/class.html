@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sci-Web</title>
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
+    />
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js"></script>
+    <script src="https://unpkg.com/function-plot/dist/function-plot.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&amp;display=swap');
+        .font-poppins {
+            font-family: 'Poppins';
+            font-weight: 100;
+        }
+        .highlight {
+            font-weight: 400;
+        }
+       .next {
+            font-weight: 400;
+            text-decoration: underline;
+        }
+        .next:hover {
+            cursor: pointer;
+        }
+        body {
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="columns">
+        <div class="column is-one-quarter"></div>
+        <div class="column is-half">
+            <center>
+                <h1 class="title is-1 font-poppins">Sci-Web</h1>
+                <span></span>
+                <h5 class="subtitle is-3 font-poppins title"></h5>
+                <span></span>
+                <div class="content"></div>
+                <script>
+                    var query = window.location.search
+                    const urlParams = new URLSearchParams(query);
+                    let step = 0
+                    let steps;
+                    document.querySelector('.title').innerText = urlParams.get('c').split(' ').map(e=>e[0].toUpperCase()+e.slice(1)).join(' ')
+                    fetch(window.location.href.split('/').slice(0,-1).join('/')+'/classes/'+urlParams.get('c')+'.cl').then(e=>e.text()).then(e=>{
+                        steps = e.split(/\n\n|\r\n\r\n/)
+                        nextStep()
+                    })
+                    let g = 0;
+                    function nextStep(){
+                        let graphics = []
+                        let el = document.createElement('div')
+                        el.classList.add('subtitle')
+                        el.classList.add('is-6')
+                        el.classList.add('font-poppins')
+                        el.style.lineHeight= '24px'
+                        el.style.textAlign = 'left'
+                        el.style.fontSize = '18px'
+                        let childs = steps[step].split('\n').map((l)=>{
+                        let nl = document.createElement('br');
+                        return [l.split('**').map((e,i)=>{
+                            if(i % 2== 1){
+                                let el = document.createElement('span')
+                                el.classList.add('has-text-danger')
+                                el.classList.add('highlight')
+                                el.innerText = e;
+                                return el;
+                            } else {
+                                let els = []
+                                e.split('>>').map((e,i)=>{
+                                 if(i % 2 == 1){
+                                        let el = document.createElement('span')
+                                        el.classList.add('has-text-link')
+                                        el.classList.add('next')
+                                        el.innerText = e;
+                                        el.onclick = () => {nextStep(); el.onclick = () => {}}
+                                        els.push(el)
+                                    } else {
+                                        let el = document.createElement('span')
+                                        els.push(...e.split('||').map((e,i)=>{
+                                            if(i % 2 == 1){
+                                                let div = document.createElement('div')
+                                                g++
+                                                div.id = 'graphic'+g
+                                                graphics.push({
+                                                    yAxis: {
+                                                        domain: [e.split(',')[2], e.split(',')[3]]
+                                                    },
+                                                    xAxis: {
+                                                        domain: [e.split(',')[0], e.split(',')[1]]
+                                                    },
+
+                                                    target: '#graphic'+g,
+                                                    data: e.split(',').slice(4).map(e=>{return{fn:e}})
+                                                })
+                                                console.log(graphics)
+                                                return div
+                                            } else {
+                                                let el = document.createElement('span')
+                                                el.innerText = e;
+                                                return el;
+                                            }
+                                        }))
+                                    }
+                                })
+                                return els
+                            }
+                        }), nl]}).flat(4)
+                        console.log(childs)
+                        childs.forEach(e=>el.appendChild(e))
+                        document.querySelector('.content').appendChild(el)
+                        graphics.forEach(e=>{
+                            if(window.innerWidth>800)e.width = window.innerWidth/2
+                            else e.width = window.innerWidth
+                            functionPlot(e)
+                        })
+                        document.querySelectorAll('path.x, path.y').forEach(e=>{
+                            console.log(e)
+                            e.style.stroke = 'gray'
+                        })
+                        step++;
+                        MathJax.typeset()
+                    }
+                </script>                
+            </center>
+        </div>
+        <div class="column is-one-quarter"></div>
+    </div>
+</body>
+</html>
