@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html class="theme-dark" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sci-Web</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css" />
+    <script src="https://unpkg.com/function-plot/dist/function-plot.js"></script>
+    <script
+        src="https://www.desmos.com/api/v1.11/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6&invertedColors=true"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked-katex-extension@5.1.4/lib/index.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css"
+        integrity="sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"
+        integrity="sha384-cMkvdD8LoxVzGF/RPUKAcvmm49FQ0oxwDF3BGKtDXcEc+T1b2N+teh/OJfpU0jr6"
+        crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"
+        integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous"
+        onload="renderMathInElement(document.body);"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&amp;display=swap');
+        .font-poppins {
+            font-family: 'Poppins';
+            font-weight: 100;
+        }
+
+        .highlight {
+            font-weight: 400;
+        }
+
+        .next {
+            font-weight: 400;
+            text-decoration: underline;
+        }
+
+        .next:hover {
+            cursor: pointer;
+        }
+
+        body {
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        ::-webkit-scrollbar {
+            height: 6px;
+            /* height of horizontal scrollbar ← You're missing this */
+            width: 4px;
+            /* width of vertical scrollbar */
+            border: 1px solid gray;
+        }
+
+        ::-webkit-scrollbar-thumb:horizontal {
+            background: gray;
+            padding: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="columns" style="padding: 10px;">
+        <div class="column"></div>
+        <div class="column is-three-fifths">
+            <center>
+                <h1 class="title is-1 font-poppins">Sci-Web</h1>
+                <span></span>
+                <h5 class="subtitle is-3 font-poppins title"></h5>
+                <span></span>
+                <div class="content"></div>
+                <script>
+                    var query = window.location.search
+                    const urlParams = new URLSearchParams(query);
+                    let step = 0
+                    let steps;
+                    const options = {
+                    };
+                    const next = {
+                        name: 'next',
+                        level: 'inline',
+                        start(src) { return src.match(/\>\>/)?.index; },
+                        tokenizer(src, tokens) {
+                            const rule = /(^\>\>[^\n]+\>\>)/;
+                            const match = rule.exec(src);
+                            if (match) {
+                                const token = {
+                                    type: 'next',
+                                    raw: match[0],
+                                    text: this.lexer.inlineTokens(match[0].slice(2, -2), [])
+                                };
+                                return token;
+                            }
+                        },
+                        renderer(token) {
+                            return `<span class="has-text-link next" onclick="nextStep(); this.onclick = () => {}">${this.parser.parseInline(token.text)}\n</span>`; // parseInline to turn child tokens into HTML
+                        }
+                    };
+                    const desmos = {
+                        name: 'desmos',
+                        level: 'inline',
+                        start(src) { return src.match(/\|\|/)?.index; },
+                        tokenizer(src, tokens) {
+                            const rule = /(^\|\|[^\n]+\|\|)/;
+                            const match = rule.exec(src);
+                            if (match) {
+                                const token = {
+                                    type: 'desmos',
+                                    raw: match[0],
+                                    text: this.lexer.inlineTokens(match[0].slice(2, -2), [])
+                                };
+                                return token;
+                            }
+                        },
+                        renderer(token) {
+                            let width, height;
+                            if (window.innerWidth > 800) {
+                                width = window.innerWidth * 3 / 5 + 'px';
+                                height = window.innerHeight * 0.6 + 'px'
+                            }
+                            else { width = window.innerWidth * 0.8 + 'px'; height = window.innerHeight * 0.6 + 'px' }
+                            g++;
+                            graphics.push(g)
+                            return '<div id="graphic'+g+'" style="width'+width+';height:'+height+';">'+this.parser.parseInline(token.text)+'</div>'
+                        }
+                    };
+                    const renderer = {
+                        strong({ tokens, depth }) {
+                            const text = this.parser.parseInline(tokens);
+                            const escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
+
+                            return `<span class="has-text-danger highlight">${text}</span>`;
+                        }
+                    };
+                    marked.use({ renderer });
+                    marked.use(markedKatex(options));
+                    marked.use({ extensions: [next] });
+                    marked.use({ extensions: [desmos] });
+                    document.querySelector('.title').innerText = urlParams.get('c').split(' ').map(e => e[0].toUpperCase() + e.slice(1)).join(' ')
+                    fetch(window.location.href.split('/').slice(0, -1).join('/') + '/classes/' + urlParams.get('c') + '.cl').then(e => e.text()).then(e => {
+                        steps = e.split(/\n\n|\r\n\r\n/)
+                        window.setTimeout(nextStep, 100)
+                    })
+                    let g = 0;
+                    let graphics = []
+                    function nextStep() {
+                        let el = document.createElement('div')
+                        el.classList.add('subtitle')
+                        el.classList.add('is-6')
+                        el.classList.add('font-poppins')
+                        el.style.lineHeight = '24px'
+                        el.style.textAlign = 'left'
+                        el.style.fontSize = '18px'
+                        document.querySelector('.content').appendChild(el)
+                        el.innerHTML = marked.parse(steps[step].split('\n').join('<br><br> '))
+                        graphics.forEach(e=>{                                               
+                            let elt= document.querySelector('#graphic'+g)
+                            let expr = elt.innerText.split(',,').slice(4)
+                            elt.innerText = ''
+                            console.log(expr)
+                            var calculator = Desmos.GraphingCalculator(elt);
+                            expr.forEach(f => calculator.setExpression({latex: f}))
+                            calculator.controller.graphSettings.config.invertedColors = true;
+                            calculator.controller.updateViews();
+                        })
+                        graphics = []
+                        step++;
+                    }
+                </script>
+            </center>
+        </div>
+        <div class="column"></div>
+    </div>
+</body>
+
+</html>
