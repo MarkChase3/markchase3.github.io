@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="theme-dark" lang="en">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -7,6 +7,9 @@
     <title>Sci-Web</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css" />
     <script src="https://unpkg.com/function-plot/dist/function-plot.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/mhchem.min.js"
+        integrity="sha384-F2ptQFZqNJuqfGGl28mIXyQ5kXH48spn7rcoS0Y9psqIKAcZPLd1NzwFlm/bl1mH"
+        crossorigin="anonymous"></script>
     <script
         src="https://www.desmos.com/api/v1.11/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6&invertedColors=true"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" crossorigin="anonymous">
@@ -21,8 +24,10 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"
         integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous"
         onload="renderMathInElement(document.body);"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&amp;display=swap');
+
         .font-poppins {
             font-family: 'Poppins';
             font-weight: 100;
@@ -42,6 +47,7 @@
         }
 
         body {
+            margin-top: 20px;
             margin-left: 10px;
             margin-right: 10px;
         }
@@ -58,21 +64,62 @@
             background: gray;
             padding: 0px;
         }
+            .right {
+                position: absolute;
+                top: 20px;
+                right: 10px;
+            }
+            .header {
+                text-align: center;
+            }
     </style>
 </head>
 
 <body>
+    <a class="abs title is-1 font-poppins" onclick="window.location.href = '/index.html'">Sci-Web</a>
+    <script>
+        document.querySelector('html').classList.add(localStorage.getItem('theme'))
+        </script>
+    <div class="header">
+        <h1 class="title is-1 font-poppins" id="title">Sci-Web</h1>
+    </div>
+    <a class="abs right title is-1 font-poppins" id="title" onclick="
+    if(document.querySelector('html').classList.contains('theme-dark')){
+        document.querySelector('html').classList.remove('theme-dark');
+        localStorage.setItem('theme', 'theme-light')
+if(calculators.length)for(let i = 0; i < calculators.length; i++){
+    calculators[i].controller.graphSettings.config.invertedColors = false;
+    calculators[i].setExpression({id: 'theme', latex: 'x=y'})
+    calculators[i].controller.updateViews();
+    calculators[i].removeExpression({id: 'theme'})
+}
+
+document.querySelector('html').classList.add('theme-light')}
+
+else {
+    document.querySelector('html').classList.remove('theme-light');
+    localStorage.setItem('theme', 'theme-dark')
+if(calculators.length)for(let i = 0; i < calculators.length; i++){
+    calculators[i].controller.graphSettings.config.invertedColors = true;
+    calculators[i].setExpression({id: 'theme', latex: 'x=y'})
+    calculators[i].controller.updateViews();
+    calculators[i].removeExpression({id: 'theme'})
+
+}
+
+    document.querySelector('html').classList.add('theme-dark')}
+    ">☼</a>
     <div class="columns" style="padding: 10px;">
         <div class="column"></div>
         <div class="column is-three-fifths">
             <center>
-                <h1 class="title is-1 font-poppins">Sci-Web</h1>
                 <span></span>
                 <h5 class="subtitle is-3 font-poppins title"></h5>
                 <span></span>
                 <div class="content"></div>
                 <script>
-                    var query = window.location.search
+                    let calculators = [];
+    var query = window.location.search
                     const urlParams = new URLSearchParams(query);
                     let step = 0
                     let steps;
@@ -123,7 +170,7 @@
                             else { width = window.innerWidth * 0.8 + 'px'; height = window.innerHeight * 0.6 + 'px' }
                             g++;
                             graphics.push(g)
-                            return '<div id="graphic'+g+'" style="width'+width+';height:'+height+';">'+this.parser.parseInline(token.text)+'</div>'
+                            return '<div id="graphic' + g + '" style="width' + width + ';height:' + height + ';">' + this.parser.parseInline(token.text) + '</div>'
                         }
                     };
                     const renderer = {
@@ -138,7 +185,7 @@
                     marked.use(markedKatex(options));
                     marked.use({ extensions: [next] });
                     marked.use({ extensions: [desmos] });
-                    document.querySelector('.title').innerText = urlParams.get('c').split(' ').map(e => e[0].toUpperCase() + e.slice(1)).join(' ')
+                    document.querySelector('#title').innerText = urlParams.get('c').split(' ').map(e => e[0].toUpperCase() + e.slice(1)).join(' ')
                     fetch(window.location.href.split('/').slice(0, -1).join('/') + '/classes/' + urlParams.get('c') + '.cl').then(e => e.text()).then(e => {
                         steps = e.split(/\n\n|\r\n\r\n/)
                         window.setTimeout(nextStep, 100)
@@ -155,14 +202,19 @@
                         el.style.fontSize = '18px'
                         document.querySelector('.content').appendChild(el)
                         el.innerHTML = marked.parse(steps[step].split('\n').join('<br><br> '))
-                        graphics.forEach(e=>{                                               
-                            let elt= document.querySelector('#graphic'+g)
-                            let expr = elt.innerText.split(',,').slice(4)
-                            elt.innerText = ''
+                        graphics.forEach(e => {
+                            let elt = document.querySelector('#graphic' + g)
+                            let expr = elt.innerText.split(',,').slice(1)
                             console.log(expr)
-                            var calculator = Desmos.GraphingCalculator(elt);
-                            expr.forEach(f => calculator.setExpression({latex: f}))
-                            calculator.controller.graphSettings.config.invertedColors = true;
+                            var calculator
+                            console.log(elt.innerText)
+                            let md = elt.innerText.split(',,')[0];
+                            elt.innerText = ''
+                            if (md == '2d') calculator = Desmos.GraphingCalculator(elt);
+                            if (md == '3d') calculator = Desmos.Calculator3D(elt);
+                            calculators.push(calculator)
+                            expr.forEach(f => calculator.setExpression({ latex: f }))
+                            if(document.querySelector('html').classList.contains('theme-dark'))calculator.controller.graphSettings.config.invertedColors = true;
                             calculator.controller.updateViews();
                         })
                         graphics = []
