@@ -65,53 +65,43 @@
             padding: 0px;
         }
             .right {
-                position: absolute;
-                top: 20px;
-                right: 10px;
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
             }
             .header {
                 text-align: center;
+            }
+            .menu-label {
+                padding-right: 10px;
+                margin-top: 10px;
+                max-width: 100%;
+                white-space: wrap;
+                text-align: left;
+                width: 100%;
             }
     </style>
 </head>
 
 <body>
-    <a class="abs title is-1 font-poppins" onclick="window.location.href = '/index.html'">Sci-Web</a>
+    <div class="header">
+
+        <a class="abs title is-1 font-poppins" onclick="window.location.href = '/index.html'">Sci-Web</a>
+    </div>
     <script>
         document.querySelector('html').classList.add(localStorage.getItem('theme'))
         </script>
     <div class="header">
-        <h1 class="title is-1 font-poppins" id="title">Sci-Web</h1>
+        <br>
+        <h1 class="title is-3 font-poppins" id="title">Sci-Web</h1>
     </div>
-    <a class="abs right title is-1 font-poppins" id="title" onclick="
-    if(document.querySelector('html').classList.contains('theme-dark')){
-        document.querySelector('html').classList.remove('theme-dark');
-        localStorage.setItem('theme', 'theme-light')
-if(calculators.length)for(let i = 0; i < calculators.length; i++){
-    calculators[i].controller.graphSettings.config.invertedColors = false;
-    calculators[i].setExpression({id: 'theme', latex: 'x=y'})
-    calculators[i].controller.updateViews();
-    calculators[i].removeExpression({id: 'theme'})
-}
-
-document.querySelector('html').classList.add('theme-light')}
-
-else {
-    document.querySelector('html').classList.remove('theme-light');
-    localStorage.setItem('theme', 'theme-dark')
-if(calculators.length)for(let i = 0; i < calculators.length; i++){
-    calculators[i].controller.graphSettings.config.invertedColors = true;
-    calculators[i].setExpression({id: 'theme', latex: 'x=y'})
-    calculators[i].controller.updateViews();
-    calculators[i].removeExpression({id: 'theme'})
-
-}
-
-    document.querySelector('html').classList.add('theme-dark')}
-    ">☼</a>
     <div class="columns" style="padding: 10px;">
-        <div class="column"></div>
-        <div class="column is-three-fifths">
+        <div class="column menu is-2">
+                <br>
+                <div class="map"></div>
+            
+        </div>
+        <div class="column is-8">
             <center>
                 <span></span>
                 <h5 class="subtitle is-3 font-poppins title"></h5>
@@ -135,7 +125,7 @@ if(calculators.length)for(let i = 0; i < calculators.length; i++){
                             if (match) {
                                 const token = {
                                     type: 'next',
-                                    raw: match[0],
+                                    raw: src,
                                     text: this.lexer.inlineTokens(match[0].slice(2, -2), [])
                                 };
                                 return token;
@@ -189,6 +179,7 @@ if(calculators.length)for(let i = 0; i < calculators.length; i++){
                     fetch(window.location.href.split('/').slice(0, -1).join('/') + '/classes/' + urlParams.get('c') + '.cl').then(e => e.text()).then(e => {
                         steps = e.split(/\n\n|\r\n\r\n/)
                         window.setTimeout(nextStep, 100)
+                        updateMap()
                     })
                     let g = 0;
                     let graphics = []
@@ -218,12 +209,62 @@ if(calculators.length)for(let i = 0; i < calculators.length; i++){
                             calculator.controller.updateViews();
                         })
                         graphics = []
+                        if(window.innerWidth>800 && step > 0)document.querySelectorAll('.menu-label')[step-1].classList.add('has-text-link')
                         step++;
+                    }
+                </script>
+                <script>
+                    function updateMap(){
+                        if(window.innerWidth > 800  ){
+       steps.slice(0,-1).forEach(e=>{
+                        let el = document.querySelector('.map')
+                        let child = document.createElement('button')
+                        child.classList.add('menu-label')
+                        child.classList.add('subtitle')
+                        child.innerText = e.split('>>')[2]
+                        console.log(e)
+                        el.appendChild(child)
+                    })} else {
+                        document.querySelector('.are-medium').style.display = 'none'
+                        document.querySelector('.columns > .menu').style.padding= '0'
+                    }
                     }
                 </script>
             </center>
         </div>
-        <div class="column"></div>
+        <div class="column is-2">
+            <br>
+                <div class="right are-medium">
+
+        <h1 class="abs subtitle is-4 right font-poppins" id="title" onclick="
+    if(document.querySelector('html').classList.contains('theme-dark')){
+        document.querySelector('html').classList.remove('theme-dark');
+        localStorage.setItem('theme', 'theme-light')
+        if(calculators.length)for(let i = 0; i < calculators.length; i++){
+            calculators[i].controller.graphSettings.config.invertedColors = false;
+            calculators[i].setExpression({id: 'theme', latex: 'x=y'})
+            calculators[i].controller.updateViews();
+            calculators[i].removeExpression({id: 'theme'})
+        }
+        
+        document.querySelector('html').classList.add('theme-light')}
+        
+        else {
+            document.querySelector('html').classList.remove('theme-light');
+    localStorage.setItem('theme', 'theme-dark')
+    if(calculators.length)for(let i = 0; i < calculators.length; i++){
+        calculators[i].controller.graphSettings.config.invertedColors = true;
+        calculators[i].setExpression({id: 'theme', latex: 'x=y'})
+        calculators[i].controller.updateViews();
+        calculators[i].removeExpression({id: 'theme'})
+        
+    }
+    
+    document.querySelector('html').classList.add('theme-dark')}
+    ">Modo: ☼</h1>
+    </div>
+
+        </div>
     </div>
 </body>
 
