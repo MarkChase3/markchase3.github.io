@@ -86,7 +86,7 @@
 <body>
     <div class="header">
 
-        <a class="abs title is-1 font-poppins" onclick="window.location.href = '/index.html'">Sci-Web</a>
+        <a class="abs title is-1 font-poppins" onclick="window.location.href = window.location.href.split('/').slice(0,-1).join('/')+'/index.html'">Sci-Web</a>
     </div>
     <script>
         document.querySelector('html').classList.add(localStorage.getItem('theme'))
